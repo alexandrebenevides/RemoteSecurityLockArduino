@@ -2,13 +2,11 @@ package com.github.alexandrebenvides.remotesecuritylockarduino.entities
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresPermission
-import androidx.core.content.ContextCompat.getSystemService
 import java.io.IOException
 import java.io.OutputStream
 import java.util.UUID
