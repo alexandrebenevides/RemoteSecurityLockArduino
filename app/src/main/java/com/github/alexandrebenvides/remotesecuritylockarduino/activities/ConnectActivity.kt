@@ -1,16 +1,12 @@
 package com.github.alexandrebenvides.remotesecuritylockarduino.activities
 
-import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -18,16 +14,19 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.github.alexandrebenvides.remotesecuritylockarduino.R
 import com.github.alexandrebenvides.remotesecuritylockarduino.entities.BluetoothConnection
-import java.io.IOException
-import java.util.UUID
 
 class ConnectActivity : AppCompatActivity() {
+    private var bluetoothManager: BluetoothManager? = null
+    private var bluetoothAdapter: BluetoothAdapter? = null
     private lateinit var enableBluetoothLauncher: ActivityResultLauncher<Intent>
+    companion object {
+        @SuppressLint("StaticFieldLeak")
+        var bluetoothConnection: BluetoothConnection? = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,18 +43,17 @@ class ConnectActivity : AppCompatActivity() {
 
     @RequiresPermission(value = "android.permission.BLUETOOTH_CONNECT")
     fun initBluetoothConnection(view: View) {
-        val bluetoothConnection = BluetoothConnection(this)
+        bluetoothConnection = BluetoothConnection(this, bluetoothAdapter)
 
-        if (bluetoothConnection.start()) {
+        if (bluetoothConnection!!.start()) {
             val intent = Intent(this, LockControlActivity::class.java)
-            intent.putExtra("bluetoothConnection", bluetoothConnection)
             startActivity(intent)
         }
     }
 
     private fun checkAndEnableBluetooth(): Boolean {
-        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        val bluetoothAdapter = bluetoothManager.adapter
+        bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        bluetoothAdapter = bluetoothManager!!.adapter
 
         enableBluetoothLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -72,7 +70,7 @@ class ConnectActivity : AppCompatActivity() {
             return false
         }
 
-        if (!bluetoothAdapter.isEnabled) {
+        if (!bluetoothAdapter!!.isEnabled) {
             val enableBluetoothIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             enableBluetoothLauncher.launch(enableBluetoothIntent)
             return true
